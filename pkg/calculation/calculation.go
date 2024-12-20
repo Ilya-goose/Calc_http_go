@@ -1,4 +1,4 @@
-package main
+package calculation
 
 import (
 	"errors"
@@ -132,31 +132,25 @@ func calculatePostfix(postfix []string) (float64, error) {
 }
 
 // Основная функция для вычисления выражения
-func Calc(expression string) (string, error) {
+func Calc(expression string) (float64, error) {
 	// Удаляем пробелы
 	expression = regexp.MustCompile(`\s+`).ReplaceAllString(expression, "")
 
 	infix := []rune(expression)
 	postfix, err := infixToPostfix(infix)
 	if err != nil {
-		return "0", err
+		return 0, err
 	}
 	result, err := calculatePostfix(postfix)
 	if err != nil {
-		return "0", err
+		return 0, err
 	}
 
 	formattedResult := fmt.Sprintf("%.6g", math.Round(result*1e6)/1e6)
-
-	return formattedResult, nil
-}
-
-func main() {
-	expression := "2+2*(4- 2)"
-	result, err := Calc(expression)
+	final_result, err := strconv.ParseFloat(formattedResult, 64)
 	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Printf(result)
+		return 0, err
 	}
+
+	return final_result, nil
 }
