@@ -38,7 +38,7 @@ func (a *Application) Run() error {
 		//вычисляем выражение
 		result, err := calculation.Calc(text)
 		if err != nil {
-			log.Println(text, " calculation failed wit error: ", err)
+			log.Println(text, " calculation failed with error: ", err)
 		} else {
 			log.Println(text, "=", result)
 		}
