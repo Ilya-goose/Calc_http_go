@@ -2,22 +2,42 @@ package application
 
 import (
 	"bufio"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/Ilya-goose/Calc_http_go/pkg/calculation"
 )
 
+type Config struct {
+	Addr string
+}
+
+func ConfigFromEnv() *Config {
+	config := new(Config)
+	config.Addr = os.Getenv("PORT")
+	if config.Addr == "" {
+		config.Addr = "8080"
+	}
+	return config
+}
+
 type Application struct {
+	config *Config
 }
 
 func New() *Application {
-	return &Application{}
+	return &Application{
+		config: ConfigFromEnv(),
+	}
 }
 
 // Функция запуска приложения
-// тут будем читать введенную строку и после нажатия ENTER писать результат работы программы на экране
+// тут будем чиать введенную строку и после нажатия ENTER писать результат работы программы на экране
 // если пользователь ввел exit - то останаваливаем приложение
 func (a *Application) Run() error {
 	for {
@@ -38,9 +58,40 @@ func (a *Application) Run() error {
 		//вычисляем выражение
 		result, err := calculation.Calc(text)
 		if err != nil {
-			log.Println(text, " calculation failed with error: ", err)
+			log.Println(text, " calculation failed wit error: ", err)
 		} else {
 			log.Println(text, "=", result)
 		}
 	}
+}
+
+type Request struct {
+	Expression string `json:"expression"`
+}
+
+func CalcHandler(w http.ResponseWriter, r *http.Request) {
+	request := new(Request)
+	defer r.Body.Close()
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := calculation.Calc(request.Expression)
+	if err != nil {
+		if errors.Is(err, calculation.ErrInvalidExpression) {
+			fmt.Fprintf(w, "err: %s", err.Error())
+		} else {
+			fmt.Fprintf(w, "unknown err")
+		}
+
+	} else {
+		fmt.Fprintf(w, "result: %f", result)
+	}
+}
+
+func (a *Application) RunServer() error {
+	http.HandleFunc("/", CalcHandler)
+	return http.ListenAndServe(":"+a.config.Addr, nil)
 }
