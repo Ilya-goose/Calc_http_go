@@ -49,6 +49,8 @@ curl --location 'localhost:8080/api/v1/calculate' \
 Можно также проверить работу внутренних файлов с помощью тестов: application_test.go и calculation_test.go.
 Для этого соответственно надо ввести в терминале команды go test ./internal/application/application_test.go или go test ./pkg/calculation/calculation_test.go
 
+Связь со мной - https://t.me/YuKiMi9I
+
 
 
 
