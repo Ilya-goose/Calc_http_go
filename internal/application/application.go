@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -60,6 +61,7 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		encoder.Encode(responce)
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, buffer.String())
 		return
 	}
 
@@ -70,12 +72,14 @@ func CalcHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		encoder.Encode(responce)
 		w.WriteHeader(http.StatusUnprocessableEntity)
+		fmt.Fprintln(w, buffer.String())
 	} else {
 		response := Response{
 			Result: res_of_cal,
 		}
 		encoder.Encode(response)
 		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, buffer.String())
 	}
 }
 
