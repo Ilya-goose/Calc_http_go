@@ -1,7 +1,6 @@
 package calculation
 
 import (
-	"errors"
 	"fmt"
 	"math"
 	"regexp"
@@ -60,14 +59,14 @@ func infixToPostfix(infix []rune) ([]string, error) {
 				stack = stack[:len(stack)-1]
 				output = append(output, string(popped))
 				if len(stack) == 0 {
-					return nil, errors.New("несбалансированные скобки")
+					return nil, ErrUnbalancedBrackets
 				}
 			}
 
 			stack = stack[:len(stack)-1]
 			closeBracketsCount++
 		} else {
-			return nil, fmt.Errorf("неизвестный символ %c", r)
+			return nil, ErrUnknownSymbol
 		}
 	}
 
@@ -80,7 +79,7 @@ func infixToPostfix(infix []rune) ([]string, error) {
 
 	// Проверяем баланс скобок
 	if openBracketsCount != closeBracketsCount {
-		return nil, errors.New("несоответствие скобок: количество открывающих и закрывающих скобок различается")
+		return nil, ErrUnbalancedBrackets
 	}
 
 	return output, nil
@@ -99,7 +98,7 @@ func calculatePostfix(postfix []string) (float64, error) {
 			stack = append(stack, value)
 		} else { // Если токен - оператор
 			if len(stack) < 2 {
-				return 0, fmt.Errorf("ошибка в выражении")
+				return 0, ErrInvalidExpression
 			}
 
 			b := stack[len(stack)-1]
@@ -115,17 +114,17 @@ func calculatePostfix(postfix []string) (float64, error) {
 				stack = append(stack, a*b)
 			case "/":
 				if b == 0 {
-					return 0, fmt.Errorf("деление на ноль")
+					return 0, ErrDivisionByZero
 				}
 				stack = append(stack, a/b)
 			default:
-				return 0, fmt.Errorf("неизвестный оператор %s", token)
+				return 0, ErrUnknownSymbol
 			}
 		}
 	}
 
 	if len(stack) != 1 {
-		return 0, fmt.Errorf("ошибка в выражении")
+		return 0, ErrInvalidExpression
 	}
 
 	return stack[0], nil
